@@ -16,10 +16,12 @@ def resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
         
-#---------------------------------------------------------------------#
+# --------------------------------------------------------------------- #
+# correr_programa inicia el programa (la ventana junto a los widgets) una sola vez para no contar con problemas
 def correr_programa():
 
-    #Funciones
+    # Funciones
+    # Sumatoria calcula la sumatoria en base a la expresión que escriba el usuario
     def Sumatoria():
         lblAlerta.configure(text='')
         resultado = 0
@@ -27,29 +29,28 @@ def correr_programa():
             i = float(txtI.get())
             n = int(txtN.get())
 
-            if(i > n):
+            if(i > n): # Verificar si i es menor que n para continuar con el cálculo
                 lblAlerta.configure(text='i debe ser menor o igual que n')
                 raise Exception('i es mayor que n')
 
-            expresion = DetectarParentesis()
-            expresion_temp = ''
-            if(expresion.__contains__('^')):
-                expresion_temp = txtEcuacion.get()
-                expresion = expresion_temp.replace('^', '**')
+            expresion = DetectarOperaciones() # Llamar a la función DetectarOperaciones para reescribir la función para que eval pueda interpretarla
 
-            while(i <= n):
+            while(i <= n): # Iterar hasta que i llegue a n, mientras se suma el resultado de la ecuación
                 try:
                     resultado += eval(expresion, {}, {'i': i})
-                except ZeroDivisionError as e:
+                # En el dado caso que al evaluar la expresión se intente dividir entre 0 se ignorará el termino correspondiente y continuará con la sumatoria
+                except ZeroDivisionError as e: 
                     print(f'Ocurrio un error: {e}')
                     lblAlerta.configure(text=f'Se ignoró el termino i={i.__round__()} por intentar dividir entre 0')
                 i+=1
             
-            print(resultado)
+            # Imprimir el resultado
             txtResultado.configure(state='normal')
             txtResultado.delete(0, 'end')
             txtResultado.insert(0, str(round(resultado, 2)))
             txtResultado.configure(state='readonly')
+
+        # Manejo de excepciones
         except ValueError as e:
             lblAlerta.configure(text='Ingresa un valor válido')
         except SyntaxError as e:
@@ -57,29 +58,34 @@ def correr_programa():
         except Exception as e:
             print(f"Ocurrio un error: {e.__class__}")
             
-    def DetectarParentesis():
+    # DetectarOperaciones identifica si la ecuación que ingreso el usuario cuenta con caracteres o operaciones que la función eval no maneja (potencias ^),
+    # un producto usando paréntesis, o producto usando la variable (Ej: 2i)
+    def DetectarOperaciones():
         ecuacion = txtEcuacion.get()
         nueva_ecuacion = ""
         i = 0
+
+        # Se recorrerá por cada caracter de la ecuación y se identificara si la ecuación contiene lo antes mencionado
         while(i < len(ecuacion)):
-            nueva_ecuacion += ecuacion[i]
+            nueva_ecuacion += ecuacion[i] # Por cada iteración se guardaran los caracteres en una nueva variable la cual se regresará al final de la función
             try:
-                if(ecuacion[i] == '('):
-                    if(i - 1 >= 0 and ecuacion[i - 1] not in ['*', '+', '-', '/']):
-                        nueva_ecuacion = nueva_ecuacion.replace('(', '*(')
-
-                if(ecuacion[i] == ')'):
-                    if(i + 1 < len(ecuacion) and ecuacion[i+1] not in ['*', '+', '-', '/']):
-                        nueva_ecuacion += '*'
-            
-                print(f'hubo un eror: {e.__class__}')
-
+                if(ecuacion[i] == '('): # Identificar si la ecuación contiene ( 
+                    if(i - 1 >= 0 and ecuacion[i - 1] not in ['*', '+', '-', '/', '^']): # Verificar si antes del caracter no hay un caracter que indique una operación
+                        nueva_ecuacion = nueva_ecuacion.replace('(', '*(') # Reemplazar el caracter por lo mismo pero con un * atras
+                if(ecuacion[i] == 'i'): # Identificar si la ecuación contiene i
+                    if(i - 1 >= 0 and ecuacion[i - 1] not in ['*', '+', '-', '/', '^']): 
+                        nueva_ecuacion = nueva_ecuacion.replace('i', '*i') # Reemplazar el caracter por lo mismo pero con un * atras
+                if(ecuacion[i] == ')'): # Identificar si la ecuación contiene )
+                    if(i + 1 < len(ecuacion) and ecuacion[i + 1] not in ['*', '+', '-', '/', '^']):
+                        nueva_ecuacion += '*' # Añadir un * a la nueva ecuación
             except Exception as e:
                 print(f'hubo un eror: {e.__class__}')
             i += 1
 
-        i = 0
-        print(nueva_ecuacion)
+        if(nueva_ecuacion.__contains__('^')): # Verificar si la ecuación cuenta con una potencia
+            nueva_ecuacion = nueva_ecuacion.replace('^', '**') # Reemplazar el ^ por ** para que eval pueda utilizar la ecuación sin problemas
+
+        #print(nueva_ecuacion)
 
         return nueva_ecuacion
     
@@ -135,9 +141,9 @@ def correr_programa():
     cmdCalcular = tk.CTkButton(ventana, text="Calcular", font=('inter', 20, 'bold'), fg_color="#FFFFFF", bg_color="#C0D0C1", width=100, height=32, corner_radius=10, text_color="#000000", hover_color="#95a395", command=Sumatoria)
     cmdCalcular.place(x=226, y=272)
 
-    #---------------------------------------------------------------------#
-
     ventana.mainloop()
 
-if __name__ == "__main__":
+    # --------------------------------------------------------------------- #
+
+if __name__ == "__main__": # Ejecutar el programa
     correr_programa()
