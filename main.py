@@ -31,7 +31,7 @@ def correr_programa():
                 lblAlerta.configure(text='i debe ser menor o igual que n')
                 raise Exception('i es mayor que n')
 
-            expresion = txtEcuacion.get()
+            expresion = DetectarParentesis()
             expresion_temp = ''
             if(expresion.__contains__('^')):
                 expresion_temp = txtEcuacion.get()
@@ -57,6 +57,32 @@ def correr_programa():
         except Exception as e:
             print(f"Ocurrio un error: {e.__class__}")
             
+    def DetectarParentesis():
+        ecuacion = txtEcuacion.get()
+        nueva_ecuacion = ""
+        i = 0
+        while(i < len(ecuacion)):
+            nueva_ecuacion += ecuacion[i]
+            try:
+                if(ecuacion[i] == '('):
+                    if(i - 1 >= 0 and ecuacion[i - 1] not in ['*', '+', '-', '/']):
+                        nueva_ecuacion = nueva_ecuacion.replace('(', '*(')
+
+                if(ecuacion[i] == ')'):
+                    if(i + 1 < len(ecuacion) and ecuacion[i+1] not in ['*', '+', '-', '/']):
+                        nueva_ecuacion += '*'
+            
+                print(f'hubo un eror: {e.__class__}')
+
+            except Exception as e:
+                print(f'hubo un eror: {e.__class__}')
+            i += 1
+
+        i = 0
+        print(nueva_ecuacion)
+
+        return nueva_ecuacion
+    
     #Ventana del programa
     ventana = tk.CTk()
     ventana.geometry("720x380")
